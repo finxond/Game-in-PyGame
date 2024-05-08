@@ -1,31 +1,33 @@
 import pygame
 
+image_path = '/data/data/collage.communication.sokolov/files/app/'
+
 clock = pygame.time.Clock()
 
 pygame.init()
 screen = pygame.display.set_mode((910,512))
 pygame.display.set_caption("Путешествие героя")
-icon = pygame.image.load('image/icon.png').convert_alpha()
+icon = pygame.image.load(image_path + 'image/icon.png').convert_alpha()
 pygame.display.set_icon(icon)
 
-bg = pygame.image.load('image/background_forest.jpg').convert_alpha()
+bg = pygame.image.load(image_path + 'image/background_forest.jpg').convert_alpha()
 walk_right = [
-    pygame.image.load('Hero/Emma/Right/Emma_right1.png').convert_alpha(),
-    pygame.image.load('Hero/Emma/Right/Emma_right2.png').convert_alpha(),
-    pygame.image.load('Hero/Emma/Right/Emma_right3.png').convert_alpha()
+    pygame.image.load(image_path + 'Hero/Emma/Right/Emma_right1.png').convert_alpha(),
+    pygame.image.load(image_path + 'Hero/Emma/Right/Emma_right2.png').convert_alpha(),
+    pygame.image.load(image_path + 'Hero/Emma/Right/Emma_right3.png').convert_alpha()
 ]
 walk_left = [
-    pygame.image.load('Hero/Emma/Left/Emma_Left1.png').convert_alpha(),
-    pygame.image.load('Hero/Emma/Left/Emma_Left2.png').convert_alpha(),
-    pygame.image.load('Hero/Emma/Left/Emma_left3.png').convert_alpha()
+    pygame.image.load(image_path + 'Hero/Emma/Left/Emma_Left1.png').convert_alpha(),
+    pygame.image.load(image_path + 'Hero/Emma/Left/Emma_Left2.png').convert_alpha(),
+    pygame.image.load(image_path + 'Hero/Emma/Left/Emma_left3.png').convert_alpha()
 ]
 
 player_anim_count = 0
 bg_x = 0
 
-enemy_image_1 = pygame.image.load('Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha()
-enemy_image_2 = pygame.image.load('Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha()
-enemy_image_3 = pygame.image.load('Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha()
+enemy_image_1 = pygame.image.load(image_path + 'Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha()
+enemy_image_2 = pygame.image.load(image_path + 'Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha()
+enemy_image_3 = pygame.image.load(image_path + 'Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha()
 
 enemy = [enemy_image_1, enemy_image_2, enemy_image_3]
 
@@ -43,13 +45,13 @@ player_y = 400
 is_jump = False
 jump_count = 10
 
-bg_sound = pygame.mixer.Sound('Songs/night.mp3')
+bg_sound = pygame.mixer.Sound(image_path + 'Songs/night.mp3')
 bg_sound.play()
 
 enemy_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(enemy_timer, 3200)
 
-label = pygame.font.Font('Fonts/Blackadder.ttf', 40)
+label = pygame.font.Font(image_path + 'Fonts/Blackadder.ttf', 40)
 lose_label = label.render('You loser!', False, (193, 196, 199))
 restart_label = label.render('Restart!', False, (115, 132, 148))
 restart_label_rect = restart_label.get_rect(topleft=(180, 200))
@@ -58,7 +60,7 @@ gameplay = True
 
 bullets_left = 5
 
-bullet = pygame.image.load('Weapon/Bullet_Right.png').convert_alpha()
+bullet = pygame.image.load(image_path + 'Weapon/Bullet_Right.png').convert_alpha()
 bullets = []
 running = True
 while running:
