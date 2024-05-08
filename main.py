@@ -1,263 +1,119 @@
 import pygame
-import random
 
-# Constants
-SCREEN_WIDTH = 910
-SCREEN_HEIGHT = 512
-HERO_X = 250
-HERO_Y = 400
-ANIMATION_SPEED = 8
-GRAVITY = 1
-JUMP_HEIGHT = 20
-BULLET_SPEED = 10
+clock = pygame.time.Clock()
 
-class Player:
-    def __init__(self, x, y, speed):
-        self.x = x
-        self.y = y
-        self.speed = speed
-        self.direction = 'right'
-        self.images = {}
-        self.index = 0
-        self.is_jumping = False
-        self.jump_velocity = 0
-        self.weapon = Weapon(self.x, self.y, self.direction)
+pygame.init()
+screen = pygame.display.set_mode((910,512))
+pygame.display.set_caption("Путешествие героя")
+icon = pygame.image.load('image/icon.png').convert_alpha()
+pygame.display.set_icon(icon)
 
-    def move(self, dx):
-        self.x += dx
-        self.x = max(0, min(self.x, SCREEN_WIDTH - 50))
+bg = pygame.image.load('image/background_forest.jpg').convert_alpha()
+walk_right = [
+    pygame.image.load('Hero/Emma/Right/Emma_right1.png').convert_alpha(),
+    pygame.image.load('Hero/Emma/Right/Emma_right2.png').convert_alpha(),
+    pygame.image.load('Hero/Emma/Right/Emma_right3.png').convert_alpha()
+]
+walk_left = [
+    pygame.image.load('Hero/Emma/Left/Emma_Left1.png').convert_alpha(),
+    pygame.image.load('Hero/Emma/Left/Emma_Left2.png').convert_alpha(),
+    pygame.image.load('Hero/Emma/Left/Emma_left3.png').convert_alpha()
+]
 
-    def update_animation(self):
-        self.index = (self.index + 1) % len(self.images[self.direction])
+player_anim_count = 0
+bg_x = 0
 
-    def jump(self):
-        if not self.is_jumping:
-            self.is_jumping = True
-            self.jump_velocity = -JUMP_HEIGHT
+enemy = [pygame.image.load('Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha(),
+        pygame.image.load('Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha(),
+        pygame.image.load('Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha()
+]
 
-    def update_jump(self):
-        if self.is_jumping:
-            self.y += self.jump_velocity
-            self.jump_velocity += GRAVITY
-            if self.y >= HERO_Y:
-                self.y = HERO_Y
-                self.is_jumping = False
-                self.jump_velocity = 0
+enemy_anim_count = 0
 
-    def attack(self):
-        bullet = self.weapon.shoot(self.x, self.y, self.direction)
-        return bullet
+enemy_x = 880
+enemy_y = 400
+ghost_list_in_game = []
 
-class Weapon:
-    def __init__(self, x, y, direction):
-        self.x = x
-        self.y = y
-        self.direction = direction
-        self.images = {
-            'left': [
-                pygame.image.load('Weapon/Gun/Left/Gun_Left1.png'),
-                pygame.image.load('Weapon/Gun/Left/Gun_Left2.png'),
-            ],
-            'right': [
-                pygame.image.load('Weapon/Gun/Right/Gun_Right1.png'),
-                pygame.image.load('Weapon/Gun/Right/Gun_Right2.png'),
-            ]
-        }
-        self.index = 0
-        self.bullet_speed = BULLET_SPEED
-        self.bullet = Bullet(self.x, self.y, self.direction, self.bullet_speed)
+player_speed = 5
+player_x = 100
+player_y = 400
 
-    def shoot(self, x, y, direction):
-        self.bullet.x = x
-        self.bullet.y = y
-        self.bullet.direction = direction
-        self.bullet.is_alive = True
-        return self.bullet
+is_jump = False
+jump_count = 10
 
-    def update_animation(self):
-        self.index = (self.index + 1) % len(self.images[self.direction])
+bg_sound = pygame.mixer.Sound('Songs/night.mp3')
+bg_sound.play()
 
-class Bullet:
-    def __init__(self, x, y, direction, speed):
-        self.x = x
-        self.y = y
-        self.direction = direction
-        self.speed = speed
-        self.images = {
-            'left': pygame.image.load('Weapon/Bullet_Left.png'),
-            'right': pygame.image.load('Weapon/Bullet_Right.png'),
-        }
-        self.image = self.images[direction]
-        self.width = self.image.get_width()
-        self.height = self.image.get_height()
-        self.is_alive = False
+enemy_timer = pygame.USEREVENT + 1
+pygame.time.set_timer(enemy_timer, 3200)
 
-    def update(self):
-        if self.is_alive:
-            if self.direction == 'left':
-                self.x -= self.speed
-            elif self.direction == 'right':
-                self.x += self.speed
+running = True
+while running:
 
-class Enemy:
-    def __init__(self, x, y, speed):
-        self.x = x
-        self.y = y
-        self.speed = speed
-        self.images = {
-            'left': pygame.image.load('Enemy/Enemy_Left.png'),
-            'right': pygame.image.load('Enemy/Enemy_Right.png'),
-        }
-        self.image = self.images['right']
-        self.width = self.image.get_width()
-        self.height = self.image.get_height()
-        self.is_alive = True
+    screen.blit(bg, (bg_x, 0))
+    screen.blit(bg, (bg_x + 910, 0))
 
-    #...
+    if ghost_list_in_game:
+        for el in ghost_list_in_game:
+            screen.blit(enemy[enemy_anim_count], el)
+            el.x -= 10
 
-    def update(self):
-        self.x += self.speed
-        if self.x + self.width > SCREEN_WIDTH:
-            self.x = random.randint(0, SCREEN_WIDTH - self.width)
-            self.y = random.randint(0, SCREEN_HEIGHT - self.height)
+            if player_rect.colliderect(el):
+                print("You lose!")
 
-    def draw(self, screen):
-        screen.blit(self.image, (self.x, self.y))
+    player_rect = walk_left[0].get_rect(topleft=(player_x, player_y))
+    enemy_rect = enemy[0].get_rect(topleft=(enemy_x,enemy_y))
 
-    def collide(self, player):
-        if self.x < player.x + player.width and self.x + self.width > player.x and self.y < player.y + player.height and self.y + self.height > player.y:
-            return True
-        return False
+    keys = pygame.key.get_pressed()
 
-    def shoot(self, player):
-        # Implement enemy shooting logic here
-        pass
+    if keys[pygame.K_LEFT]:
+        screen.blit(walk_left[player_anim_count], (player_x, player_y))
+    else:
+        screen.blit(walk_right[player_anim_count], (player_x, player_y))
 
-class GameOver:
-    def __init__(self, screen):
-        self.screen = screen
-        self.font = pygame.font.Font(None, 36)
-        self.text = self.font.render("Game Over", True, (255, 0, 0))
-        self.text_rect = self.text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-        self.button_width = 100
-        self.button_height = 50
-        self.close_button = pygame.Rect(SCREEN_WIDTH // 2 - self.button_width // 2, SCREEN_HEIGHT // 2 + 50, self.button_width, self.button_height)
-        self.restart_button = pygame.Rect(SCREEN_WIDTH // 2 - self.button_width // 2, SCREEN_HEIGHT // 2 + 120, self.button_width, self.button_height)
-        self.close_text = self.font.render("Close", True, (255, 255, 255))
-        self.restart_text = self.font.render("Restart", True, (255, 255, 255))
-        self.close_text_rect = self.close_text.get_rect(center=self.close_button.center)
-        self.restart_text_rect = self.restart_text.get_rect(center=self.restart_button.center)
-        self.running = True
+    if keys[pygame.K_LEFT] and player_x > 5:
+        player_x -= player_speed
+    elif keys[pygame.K_RIGHT] and player_x < 850:
+        player_x += player_speed
 
-    def draw(self):
-        self.screen.blit(self.text, self.text_rect)
-        pygame.draw.rect(self.screen, (255, 0, 0), self.close_button)
-        pygame.draw.rect(self.screen, (255, 0, 0), self.restart_button)
-        self.screen.blit(self.close_text, self.close_text_rect)
-        self.screen.blit(self.restart_text, self.restart_text_rect)
-
-    def handle_events(self, events):
-        for event in events:
-            if event.type == pygame.QUIT:
-                self.running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if self.close_button.collidepoint(event.pos):
-                    self.running = False
-                elif self.restart_button.collidepoint(event.pos):
-                    # Restart the game
-                    pass
-
-class Game:
-    def __init__(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.clock = pygame.time.Clock()
-        self.player = Player(HERO_X, HERO_Y, 5)
-        self.enemy = Enemy(random.randint(0, SCREEN_WIDTH - 100), random.randint(0, SCREEN_HEIGHT - 100), 1)
-        self.game_over = None
-
-    def handle_events(self):
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.QUIT:
-                return False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    self.player.move(-self.player.speed)
-                    self.player.direction = 'left'
-                elif event.key == pygame.K_RIGHT:
-                    self.player.move(self.player.speed)
-                    self.player.direction = 'right'
-                elif event.key == pygame.K_SPACE:
-                    self.player.jump()
-                elif event.key == pygame.K_z:
-                    bullet = self.player.attack()
-                    bullet.is_alive = True
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    self.player.move(0)
-
-        return True
-
-    def update_game_state(self):
-        self.player.update_animation()
-        self.player.weapon.update_animation()
-        self.enemy.update()
-
-    def move_player(self):
-        self.player.weapon.bullet.update()
-
-    def update_bullets(self):
-        for bullet in self.player.weapon.bullet:
-            if bullet.is_alive:
-                if bullet.x < 0 or bullet.x > SCREEN_WIDTH:
-                    bullet.is_alive = False
-                elif bullet.collide(self.enemy):
-                    self.enemy.is_alive = False
-                    bullet.is_alive = False
-
-    def render_screen(self):
-        self.screen.fill((0, 0, 0))
-        self.player.weapon.bullet.draw(self.screen)
-        self.player.draw(self.screen)
-        self.enemy.draw(self.screen)
-        if self.game_over:
-            self.game_over.draw()
-        pygame.display.flip()
-
-    def run(self):
-        running = True
-        game_over = None
-        enemy = Enemy(random.randint(0, SCREEN_WIDTH - 100), random.randint(0, SCREEN_HEIGHT - 100), 1)
-
-        while running:
-            events = pygame.event.get()
-            if game_over:
-                game_over.handle_events(events)
-                if not game_over.running:
-                    running = False
+    if not is_jump:
+        if keys[pygame.K_SPACE]:
+            is_jump = True
+    else:
+        if jump_count >= -10:
+            if jump_count > 0:
+                player_y -= (jump_count ** 2) / 2
             else:
-                running = self.handle_events()
+                player_y += (jump_count ** 2) / 2
+            jump_count -= 1
+        else:
+            is_jump = False
+            jump_count = 10
 
-            self.update_game_state()
-            self.move_player()
-            self.player.update_jump()
-            self.update_bullets()
-            enemy.update()
+    if player_anim_count == 2:
+        player_anim_count = 0
+    else:
+        player_anim_count += 1
 
-            if self.player.weapon.bullet.collide(enemy):
-                enemy.is_alive = False
+    if enemy_anim_count == 2:
+        enemy_anim_count = 0
+    else:
+        enemy_anim_count = 0
 
-            if enemy.collide(self.player):
-                if not self.player.weapon.bullet.is_alive:
-                    game_over = GameOver(self.screen)
+    bg_x-= 2
+    if bg_x == -910:
+        bg_x = 0
 
-            self.render_screen()
-            self.clock.tick(self.animation_speed)
+    enemy_x -= 10
 
-            if not enemy.is_alive:
-                enemy = Enemy(random.randint(0, SCREEN_WIDTH - 100), random.randint(0, SCREEN_HEIGHT - 100), 1)
+    pygame.display.update()
 
-if __name__ == '__main__':
-    game = Game()
-    game.run()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+            pygame.quit()
+        if event.type == enemy_timer:
+            ghost_list_in_game.append(enemy[enemy_anim_count].get_rect(topleft=(880,400)))
+
+
+    clock.tick(8)
