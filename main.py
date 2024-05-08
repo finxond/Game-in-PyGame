@@ -23,10 +23,12 @@ walk_left = [
 player_anim_count = 0
 bg_x = 0
 
-enemy = [pygame.image.load('Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha(),
-        pygame.image.load('Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha(),
-        pygame.image.load('Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha()
-]
+enemy_image_1 = pygame.image.load('Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha()
+enemy_image_2 = pygame.image.load('Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha()
+enemy_image_3 = pygame.image.load('Enemy/Enemy_Left/Enemy_Left1.png').convert_alpha()
+
+enemy = [enemy_image_1, enemy_image_2, enemy_image_3]
+
 
 enemy_anim_count = 0
 
@@ -53,6 +55,8 @@ restart_label = label.render('Restart!', False, (115, 132, 148))
 restart_label_rect = restart_label.get_rect(topleft=(180, 200))
 gameplay = True
 
+bullet = pygame.image.load('Weapon/Bullet_Right.png').convert_alpha()
+bullets = []
 running = True
 while running:
 
@@ -60,18 +64,16 @@ while running:
     screen.blit(bg, (bg_x + 910, 0))
 
     if gameplay:
-
         if ghost_list_in_game:
-            for (i, el) in enumerate(ghost_list_in_game):
-                screen.blit(enemy[enemy_anim_count], el)
-                el.x -= 10
+            for (i, enemy_rect) in enumerate(ghost_list_in_game):
+                screen.blit(enemy[enemy_anim_count], (enemy_rect.x, enemy_rect.y))
+                enemy_rect.x -= 10
 
+            if enemy_rect.x < -10:
+                ghost_list_in_game.pop(i)
 
-                if el.x < -10:
-                    ghost_list_in_game.pop(i)
-
-                if player_rect.colliderect(el):
-                    gameplay = False
+            if player_rect.colliderect(enemy_rect):
+                gameplay = False
 
         player_rect = walk_left[0].get_rect(topleft=(player_x, player_y))
         enemy_rect = enemy[0].get_rect(topleft=(enemy_x,enemy_y))
@@ -116,7 +118,26 @@ while running:
         if bg_x == -910:
             bg_x = 0
 
-        enemy_x -= 10
+
+        if keys[pygame.K_z]:
+             bullets.append(bullet.get_rect(topleft=(player_x + 30, player_y + 10)))
+
+        if bullets:
+            for (i, el) in enumerate(bullets):
+                screen.blit(bullet, (el.x, el.y))
+                el.x += 10
+
+                if el.x > 910:
+                    bullets.pop(i)
+
+                if ghost_list_in_game:
+                    for (index, ghost) in enumerate (ghost_list_in_game):
+                        if el.colliderect(ghost):
+                            ghost_list_in_game.pop(index)
+                            bullets.pop(i)
+
+
+
     else:
         screen.fill((87, 88, 89))
         screen.blit(lose_label, (180, 100))
@@ -127,6 +148,8 @@ while running:
             gameplay = True
             player_x = 100
             ghost_list_in_game.clear()
+            bullets.clear()
+            bullets.pop(i)
 
     pygame.display.update()
 
