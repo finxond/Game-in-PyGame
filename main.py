@@ -53,7 +53,10 @@ label = pygame.font.Font('Fonts/Blackadder.ttf', 40)
 lose_label = label.render('You loser!', False, (193, 196, 199))
 restart_label = label.render('Restart!', False, (115, 132, 148))
 restart_label_rect = restart_label.get_rect(topleft=(180, 200))
+
 gameplay = True
+
+bullets_left = 5
 
 bullet = pygame.image.load('Weapon/Bullet_Right.png').convert_alpha()
 bullets = []
@@ -118,10 +121,6 @@ while running:
         if bg_x == -910:
             bg_x = 0
 
-
-        if keys[pygame.K_z]:
-             bullets.append(bullet.get_rect(topleft=(player_x + 30, player_y + 10)))
-
         if bullets:
             for (i, el) in enumerate(bullets):
                 screen.blit(bullet, (el.x, el.y))
@@ -136,8 +135,6 @@ while running:
                             ghost_list_in_game.pop(index)
                             bullets.pop(i)
 
-
-
     else:
         screen.fill((87, 88, 89))
         screen.blit(lose_label, (180, 100))
@@ -149,7 +146,7 @@ while running:
             player_x = 100
             ghost_list_in_game.clear()
             bullets.clear()
-            bullets.pop(i)
+            bullets_left += 5
 
     pygame.display.update()
 
@@ -159,6 +156,9 @@ while running:
             pygame.quit()
         if event.type == enemy_timer:
             ghost_list_in_game.append(enemy[enemy_anim_count].get_rect(topleft=(880,400)))
+        if gameplay and event.type == pygame.KEYUP and event.key == pygame.K_z and bullets_left > 0:
+            bullets.append(bullet.get_rect(topleft=(player_x + 30, player_y + 10)))
+            bullets_left -= 1
 
 
     clock.tick(8)
