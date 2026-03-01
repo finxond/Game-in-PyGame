@@ -29,7 +29,7 @@
    pip install pygame
 
 Клонируйте репозиторий:
-git clone https://github.com/ваш-username/ваш-репозиторий.git
+git clone https://github.com/finxond/Game-in-PyGame.git
 
 Перейдите в папку игры и запустите:
 python main.py
